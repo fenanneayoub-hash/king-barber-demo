@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>King Barber</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Reem+Kufi:wght@500;700&family=Oswald:wght@500;600&display=swap">
+<style>
+/* Layout: one column on phones; on wide screens the steps sit left and a live summary card sticks right. */
+:root {
+  --bg: #f4f2ed;
+  --surface: #ffffff;
+  --fg: #1b1a17;
+  --muted: #6d6a60;
+  --line: #e3dfd3;
+  --accent: #8a6410;
+  --accent-fg: #ffffff;
+  --accent-soft: #f4ead2;
+  --ok: #1f7a4d;
+  --ok-soft: #e0f3e9;
+  --warn: #9a5b00;
+  --warn-soft: #fbefd9;
+  --font-body: "Tajawal", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Oswald", "Reem Kufi", "Tajawal", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121110; --surface: #1c1a17; --fg: #f3f0e8; --muted: #a8a293; --line: #302d27;
+    --accent: #d9a93a; --accent-fg: #1a1405; --accent-soft: #3a2f14;
+    --ok: #62d394; --ok-soft: #173325; --warn: #f2b45a; --warn-soft: #3a2b10;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121110; --surface: #1c1a17; --fg: #f3f0e8; --muted: #a8a293; --line: #302d27;
+  --accent: #d9a93a; --accent-fg: #1a1405; --accent-soft: #3a2f14;
+  --ok: #62d394; --ok-soft: #173325; --warn: #f2b45a; --warn-soft: #3a2b10;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-block: 0 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1040px; margin-inline: auto; }
+header.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-block: 20px 8px; }
+.brand { font-family: var(--font-display); font-weight: 600; font-size: 1.6rem; letter-spacing: .08em; text-transform: uppercase; display: flex; align-items: baseline; gap: 10px; }
+.brand small { font-family: var(--font-display); font-weight: 500; font-size: .95rem; letter-spacing: .08em; color: var(--accent); }
+.tools { display: flex; gap: 8px; flex-wrap: wrap; }
+button, input, select { font: inherit; color: inherit; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.seg button { background: none; border: 0; padding: 8px 14px; cursor: pointer; font-weight: 500; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.demo-note { background: var(--warn-soft); color: var(--warn); border-radius: 10px; padding: 8px 12px; font-size: .9rem; margin-block: 8px 20px; }
+.hero { padding-block: 8px 20px; }
+.hero h1 { font-family: var(--font-display); font-size: clamp(1.7rem, 5vw, 2.5rem); line-height: 1.2; margin: 0 0 6px; text-wrap: balance; }
+.hero p { margin: 0; color: var(--muted); max-width: 60ch; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (min-width: 880px) { .grid { grid-template-columns: minmax(0, 1fr) 320px; } .summary { position: sticky; top: 16px; } }
+.steps { display: grid; gap: 14px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; min-width: 0; }
+.panel h2 { font-size: 1.05rem; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+.panel h2 .n { background: var(--accent-soft); color: var(--accent); border-radius: 999px; width: 26px; height: 26px; display: inline-grid; place-items: center; font-size: .85rem; font-weight: 800; }
+.services { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.svc { text-align: start; background: var(--bg); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; cursor: pointer; display: grid; gap: 2px; }
+.svc b { font-weight: 700; }
+.svc span { color: var(--muted); font-size: .88rem; }
+.svc[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { background: var(--bg); border: 1.5px solid var(--line); border-radius: 999px; padding: 8px 16px; cursor: pointer; font-weight: 500; }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-fg); }
+.days { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; }
+.day { flex: 0 0 auto; min-width: 74px; text-align: center; background: var(--bg); border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 10px; cursor: pointer; display: grid; line-height: 1.3; }
+.day small { color: var(--muted); font-size: .8rem; }
+.day b { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+.day[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-fg); }
+.day[aria-pressed="true"] small { color: inherit; opacity: .85; }
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; }
+.slot { background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 0; text-align: center; cursor: pointer; font-variant-numeric: tabular-nums; direction: ltr; }
+.slot[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-fg); }
+.slot:disabled { opacity: .4; text-decoration: line-through; cursor: not-allowed; }
+.empty { color: var(--muted); margin: 0; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+label.f { display: grid; gap: 4px; font-weight: 500; font-size: .92rem; }
+input[type=text], input[type=tel] { background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; }
+input.bad { border-color: var(--accent); }
+.err { color: var(--accent); min-height: 1.4em; margin: 10px 0 0; font-size: .92rem; }
+.cta { background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 12px; padding: 12px 20px; font-weight: 700; cursor: pointer; width: 100%; font-size: 1.02rem; }
+.ghost { background: none; border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 14px; cursor: pointer; font-weight: 500; }
+.summary h2 { font-size: 1.05rem; margin: 0 0 10px; }
+.summary dl { margin: 0 0 14px; display: grid; gap: 8px; }
+.summary dl div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed var(--line); padding-bottom: 6px; }
+.summary dt { color: var(--muted); }
+.summary dd { margin: 0; font-weight: 700; text-align: end; }
+.total { display: flex; justify-content: space-between; font-weight: 800; font-size: 1.1rem; margin-bottom: 14px; }
+.done { background: var(--ok-soft); border: 1px solid var(--ok); border-radius: 14px; padding: 18px; display: grid; gap: 10px; }
+.done h2 { margin: 0; color: var(--ok); font-size: 1.2rem; }
+.done .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.done a.ghost { text-decoration: none; display: inline-block; }
+.msg { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; direction: rtl; white-space: pre-wrap; font-size: .92rem; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; }
+th, td { text-align: start; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { color: var(--muted); font-weight: 500; font-size: .85rem; }
+td.t { font-variant-numeric: tabular-nums; direction: ltr; text-align: start; }
+.pill { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: .82rem; font-weight: 700; }
+.pill.pending { background: var(--warn-soft); color: var(--warn); }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.no { background: var(--accent-soft); color: var(--accent); }
+.mini { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; cursor: pointer; margin-inline-end: 4px; }
+.ex { color: var(--muted); font-size: .8rem; }
+@media (prefers-reduced-motion: no-preference) { .cta, .chip, .svc, .day, .slot { transition: background .15s, border-color .15s; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span id="brandName">KING BARBER</span><small data-i="city"></small></div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Mode">
+        <button id="tabBook" aria-pressed="true" data-i="tabBook"></button>
+        <button id="tabOwner" aria-pressed="false" data-i="tabOwner"></button>
+      </div>
+      <div class="seg" role="group" aria-label="Language">
+        <button id="langAr" aria-pressed="true">العربية</button>
+        <button id="langFr" aria-pressed="false">Français</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="demo-note" data-i="demo"></div>
+
+  <section id="viewBook">
+    <div class="hero">
+      <h1 data-i="h1"></h1>
+      <p data-i="sub"></p>
+    </div>
+    <div class="grid">
+      <div class="steps" id="steps">
+        <div class="panel"><h2><span class="n">1</span><span data-i="s1"></span></h2><div class="services" id="services"></div></div>
+        <div class="panel"><h2><span class="n">2</span><span data-i="s2"></span></h2><div class="chips" id="staff"></div></div>
+        <div class="panel"><h2><span class="n">3</span><span data-i="s3"></span></h2><div class="days" id="days"></div><div class="slots" id="slots"></div></div>
+        <div class="panel">
+          <h2><span class="n">4</span><span data-i="s4"></span></h2>
+          <div class="fields">
+            <label class="f" for="fName"><span data-i="name"></span><input type="text" id="fName" autocomplete="name"></label>
+            <label class="f" for="fPhone"><span data-i="phone"></span><input type="tel" id="fPhone" autocomplete="tel" inputmode="tel" placeholder="06 12 34 56 78" dir="ltr"></label>
+          </div>
+          <p class="err" id="err" role="alert"></p>
+        </div>
+      </div>
+      <aside class="panel summary" id="summary">
+        <h2 data-i="sum"></h2>
+        <dl id="sumList"></dl>
+        <div class="total"><span data-i="total"></span><span id="sumTotal">—</span></div>
+        <button class="cta" id="submit" data-i="confirm"></button>
+      </aside>
+    </div>
+    <div class="done" id="done" hidden></div>
+  </section>
+
+  <section id="viewOwner" hidden>
+    <div class="hero">
+      <h1 data-i="ownerH"></h1>
+      <p data-i="ownerSub"></p>
+    </div>
+    <div class="panel"><div class="table-wrap"><table>
+      <thead><tr><th data-i="cName"></th><th data-i="cService"></th><th data-i="cStaff"></th><th data-i="cWhen"></th><th data-i="cStatus"></th><th></th></tr></thead>
+      <tbody id="ownerRows"></tbody>
+    </table></div></div>
+  </section>
+</div>
+
+<script>
+var T = {
+  ar: {
+    city: "by Anwar", tabBook: "حجز موعد", tabOwner: "لوحة الصالون",
+    demo: "نسخة تجريبية للعرض على صالون King Barber by Anwar: ماشي الموقع الرسمي ديالو، والحجوزات ما كتمشيش ليه، والحلاقين والأثمنة غير أمثلة.",
+    h1: "حجز موعدك فدقيقة", sub: "ختار الخدمة والحلاق والوقت، وغادي نأكدو ليك الموعد فالواتساب.",
+    s1: "ختار الخدمة", s2: "ختار الحلاق", s3: "ختار النهار والساعة", s4: "معلوماتك",
+    name: "السمية", phone: "نمرة التيليفون", sum: "ملخص الحجز", total: "المجموع", confirm: "أكد الحجز",
+    anyone: "أي حلاق خاوي", dh: "درهم", min: "د", noSlots: "ما كاين حتى وقت خاوي فهاد النهار.", pick: "ختار الخدمة والحلاق والنهار الأول.",
+    kService: "الخدمة", kStaff: "الحلاق", kDay: "النهار", kTime: "الساعة", dash: "—",
+    eService: "ختار الخدمة.", eStaff: "ختار الحلاق.", eTime: "ختار الساعة.", eName: "كتب سميتك.", ePhone: "نمرة التيليفون ماشي صحيحة. مثال: 06 12 34 56 78",
+    doneH: "تسجل طلب الحجز ديالك", doneP: "الصالون غادي يأكد ليك فالواتساب. هادي رسالة واجدة تصيفطها:",
+    wa: "حل الواتساب", copy: "نسخ الرسالة", copied: "تنسخات", again: "حجز جديد",
+    ownerH: "الحجوزات الجاية", ownerSub: "هكا كيشوف مول الصالون الحجوزات ويأكدها ولا يلغيها.",
+    cName: "الزبون", cService: "الخدمة", cStaff: "الحلاق", cWhen: "الموعد", cStatus: "الحالة",
+    pending: "كيتسنى", ok: "مأكد", no: "تلغى", confirmBtn: "أكد", cancelBtn: "لغي", example: "مثال",
+    msg: function (b) { return "السلام عليكم، بغيت نأكد الحجز ديالي فصالون King Barber by Anwar:\nالخدمة: " + b.service + "\nالحلاق: " + b.staff + "\nالموعد: " + b.when + "\nالسمية: " + b.name; }
+  },
+  fr: {
+    city: "by Anwar", tabBook: "Réserver", tabOwner: "Espace salon",
+    demo: "Démo présentée au salon King Barber by Anwar : ce n'est pas son site officiel, les réservations ne lui sont pas envoyées, coiffeurs et prix sont des exemples.",
+    h1: "Réservez en une minute", sub: "Choisissez la prestation, le coiffeur et l'heure. Le salon confirme sur WhatsApp.",
+    s1: "Choisissez la prestation", s2: "Choisissez le coiffeur", s3: "Choisissez le jour et l'heure", s4: "Vos coordonnées",
+    name: "Nom", phone: "Téléphone", sum: "Récapitulatif", total: "Total", confirm: "Confirmer la réservation",
+    anyone: "Peu importe", dh: "DH", min: "min", noSlots: "Aucun créneau libre ce jour-là.", pick: "Choisissez d'abord la prestation, le coiffeur et le jour.",
+    kService: "Prestation", kStaff: "Coiffeur", kDay: "Jour", kTime: "Heure", dash: "—",
+    eService: "Choisissez une prestation.", eStaff: "Choisissez un coiffeur.", eTime: "Choisissez une heure.", eName: "Indiquez votre nom.", ePhone: "Numéro invalide. Exemple : 06 12 34 56 78",
+    doneH: "Demande de réservation enregistrée", doneP: "Le salon vous confirmera sur WhatsApp. Voici un message prêt à envoyer :",
+    wa: "Ouvrir WhatsApp", copy: "Copier le message", copied: "Copié", again: "Nouvelle réservation",
+    ownerH: "Réservations à venir", ownerSub: "Voici comment le patron voit les réservations, les confirme ou les annule.",
+    cName: "Client", cService: "Prestation", cStaff: "Coiffeur", cWhen: "Rendez-vous", cStatus: "Statut",
+    pending: "En attente", ok: "Confirmé", no: "Annulé", confirmBtn: "Confirmer", cancelBtn: "Annuler", example: "exemple",
+    msg: function (b) { return "Bonjour, je souhaite confirmer ma réservation au salon King Barber by Anwar :\nPrestation : " + b.service + "\nCoiffeur : " + b.staff + "\nRendez-vous : " + b.when + "\nNom : " + b.name; }
+  }
+};
+var SERVICES = [
+  { id: "cut", ar: "قص الشعر", fr: "Coupe", price: 50, min: 30 },
+  { id: "beard", ar: "حلاقة اللحية", fr: "Barbe", price: 30, min: 20 },
+  { id: "combo", ar: "قص + لحية", fr: "Coupe + barbe", price: 70, min: 40 },
+  { id: "kids", ar: "قص الأطفال", fr: "Coupe enfant", price: 35, min: 25 },
+  { id: "care", ar: "تنظيف الوجه", fr: "Soin du visage", price: 80, min: 35 }
+];
+var STAFF = [
+  { id: "anw", ar: "أنوار", fr: "Anwar" },
+  { id: "yas", ar: "ياسين", fr: "Yassine" },
+  { id: "ami", ar: "أمين", fr: "Amine" },
+  { id: "ham", ar: "حمزة", fr: "Hamza" }
+];
+/* 40 min max per client + 15 min between clients = one slot every 55 min, per chair (4 chairs). */
+var SLOT_MIN = 40, GAP_MIN = 15, OPEN_MIN = 10 * 60, CLOSE_MIN = 20 * 60;
+var TIMES = [];
+for (var m = OPEN_MIN; m + SLOT_MIN <= CLOSE_MIN; m += SLOT_MIN + GAP_MIN) { TIMES.push(pad(Math.floor(m / 60)) + ":" + pad(m % 60)); }
+function pad(n) { return n < 10 ? "0" + n : "" + n; }
+
+var lang = "ar";
+var S = { service: null, staff: null, dayIdx: 0, time: null };
+var bookings = [];
+var days = [];
+(function () {
+  var now = new Date();
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    days.push({ date: d, key: d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) });
+  }
+})();
+function seedExamples() {
+  var k0 = days[0].key, k1 = days[1].key;
+  bookings = [
+    { id: 1, ex: true, name: "Karim B.", service: "combo", staff: "yas", key: k0, time: TIMES[5], status: "pending" },
+    { id: 2, ex: true, name: "Nadia El A.", service: "kids", staff: "anw", key: k1, time: TIMES[1], status: "ok" },
+    { id: 3, ex: true, name: "Mehdi R.", service: "cut", staff: "ami", key: k1, time: TIMES[7], status: "pending" }
+  ];
+}
+seedExamples();
+
+function t(k) { return T[lang][k]; }
+function nm(o) { return o[lang]; }
+function $(id) { return document.getElementById(id); }
+function el(tag, attrs, kids) {
+  var e = document.createElement(tag);
+  for (var a in (attrs || {})) {
+    if (a === "text") e.textContent = attrs[a];
+    else if (a.indexOf("on") === 0) e.addEventListener(a.slice(2), attrs[a]);
+    else e.setAttribute(a, attrs[a]);
+  }
+  (kids || []).forEach(function (c) { e.appendChild(c); });
+  return e;
+}
+function svcById(id) { return SERVICES.filter(function (s) { return s.id === id; })[0]; }
+function staffById(id) { return STAFF.filter(function (s) { return s.id === id; })[0]; }
+function dayLabel(d, opts) { return new Intl.DateTimeFormat(lang === "ar" ? "ar-MA-u-nu-latn" : "fr-MA", opts).format(d); }
+
+function hash(str) { var h = 0; for (var i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) % 9973; } return h; }
+function takenFor(key, staffId, time) {
+  if (bookings.some(function (b) { return b.key === key && b.staff === staffId && b.time === time && b.status !== "no"; })) return true;
+  return hash(key + staffId + time) % 100 < 32;
+}
+function slotFree(key, staffId, time) {
+  if (staffId === "any") return STAFF.some(function (s) { return !takenFor(key, s.id, time); });
+  return !takenFor(key, staffId, time);
+}
+function pastSlot(dayIdx, time) {
+  if (dayIdx !== 0) return false;
+  var now = new Date();
+  var p = time.split(":");
+  return (+p[0]) * 60 + (+p[1]) < now.getHours() * 60 + now.getMinutes() + 30;
+}
+
+function applyStatic() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  $("brandName").textContent = "KING BARBER";
+  document.title = "King Barber";
+  document.querySelectorAll("[data-i]").forEach(function (n) { n.textContent = t(n.getAttribute("data-i")); });
+  $("langAr").setAttribute("aria-pressed", lang === "ar");
+  $("langFr").setAttribute("aria-pressed", lang === "fr");
+}
+
+function renderServices() {
+  var box = $("services"); box.textContent = "";
+  SERVICES.forEach(function (s) {
+    var b = el("button", { type: "button", class: "svc", "aria-pressed": S.service === s.id }, [
+      el("b", { text: nm(s) }),
+      el("span", { text: s.price + " " + t("dh") + " · " + s.min + " " + t("min") })
+    ]);
+    b.addEventListener("click", function () { S.service = s.id; renderServices(); renderSummary(); });
+    box.appendChild(b);
+  });
+}
+function renderStaff() {
+  var box = $("staff"); box.textContent = "";
+  [{ id: "any", ar: t("anyone"), fr: t("anyone") }].concat(STAFF).forEach(function (s) {
+    var b = el("button", { type: "button", class: "chip", "aria-pressed": S.staff === s.id, text: nm(s) });
+    b.addEventListener("click", function () { S.staff = s.id; S.time = null; renderStaff(); renderSlots(); renderSummary(); });
+    box.appendChild(b);
+  });
+}
+function renderDays() {
+  var box = $("days"); box.textContent = "";
+  days.forEach(function (d, i) {
+    var b = el("button", { type: "button", class: "day", "aria-pressed": S.dayIdx === i }, [
+      el("small", { text: dayLabel(d.date, { weekday: "short" }) }),
+      el("b", { text: "" + d.date.getDate() }),
+      el("small", { text: dayLabel(d.date, { month: "short" }) })
+    ]);
+    b.addEventListener("click", function () { S.dayIdx = i; S.time = null; renderDays(); renderSlots(); renderSummary(); });
+    box.appendChild(b);
+  });
+}
+function renderSlots() {
+  var box = $("slots"); box.textContent = "";
+  if (!S.staff) { box.appendChild(el("p", { class: "empty", text: t("pick") })); return; }
+  var key = days[S.dayIdx].key, n = 0;
+  TIMES.forEach(function (time) {
+    if (pastSlot(S.dayIdx, time)) return;
+    var free = slotFree(key, S.staff, time);
+    if (free) n++;
+    var b = el("button", { type: "button", class: "slot", "aria-pressed": S.time === time, text: time });
+    if (!free) b.disabled = true;
+    b.addEventListener("click", function () { S.time = time; renderSlots(); renderSummary(); });
+    box.appendChild(b);
+  });
+  if (!n) { box.textContent = ""; box.appendChild(el("p", { class: "empty", text: t("noSlots") })); }
+}
+function renderSummary() {
+  var list = $("sumList"); list.textContent = "";
+  var s = S.service ? svcById(S.service) : null;
+  var st = S.staff ? (S.staff === "any" ? t("anyone") : nm(staffById(S.staff))) : t("dash");
+  var rows = [
+    [t("kService"), s ? nm(s) : t("dash")],
+    [t("kStaff"), st],
+    [t("kDay"), dayLabel(days[S.dayIdx].date, { weekday: "long", day: "numeric", month: "long" })],
+    [t("kTime"), S.time || t("dash")]
+  ];
+  rows.forEach(function (r) { list.appendChild(el("div", {}, [el("dt", { text: r[0] }), el("dd", { text: r[1] })])); });
+  $("sumTotal").textContent = s ? s.price + " " + t("dh") : t("dash");
+}
+function statusPill(s) { return el("span", { class: "pill " + s, text: t(s) }); }
+function whenText(b) { var d = days.filter(function (x) { return x.key === b.key; })[0]; return (d ? dayLabel(d.date, { weekday: "short", day: "numeric", month: "short" }) : b.key) + " · " + b.time; }
+function renderOwner() {
+  var body = $("ownerRows"); body.textContent = "";
+  bookings.slice().sort(function (a, b) { return (a.key + a.time) < (b.key + b.time) ? -1 : 1; }).forEach(function (b) {
+    var name = el("td", { text: b.name });
+    if (b.ex) name.appendChild(el("span", { class: "ex", text: " (" + t("example") + ")" }));
+    var act = el("td");
+    if (b.status === "pending") {
+      var okB = el("button", { type: "button", class: "mini", text: t("confirmBtn") });
+      okB.addEventListener("click", function () { b.status = "ok"; renderOwner(); });
+      act.appendChild(okB);
+    }
+    if (b.status !== "no") {
+      var noB = el("button", { type: "button", class: "mini", text: t("cancelBtn") });
+      noB.addEventListener("click", function () { b.status = "no"; renderOwner(); renderSlots(); });
+      act.appendChild(noB);
+    }
+    body.appendChild(el("tr", {}, [
+      name,
+      el("td", { text: nm(svcById(b.service)) }),
+      el("td", { text: nm(staffById(b.staff)) }),
+      el("td", { class: "t", text: whenText(b) }),
+      el("td", {}, [statusPill(b.status)]),
+      act
+    ]));
+  });
+}
+function renderAll() { applyStatic(); renderServices(); renderStaff(); renderDays(); renderSlots(); renderSummary(); renderOwner(); if (lastBooking) showDone(lastBooking); }
+
+var lastBooking = null;
+function setErr(msg, field) {
+  $("err").textContent = msg || "";
+  $("fName").classList.toggle("bad", field === "fName");
+  $("fPhone").classList.toggle("bad", field === "fPhone");
+  if (field) $(field).focus();
+}
+$("submit").addEventListener("click", function () {
+  if (!S.service) return setErr(t("eService"));
+  if (!S.staff) return setErr(t("eStaff"));
+  if (!S.time) return setErr(t("eTime"));
+  var name = $("fName").value.trim();
+  if (name.length < 2) return setErr(t("eName"), "fName");
+  var phone = $("fPhone").value.replace(/[\s.\-]/g, "");
+  if (!/^(\+212|00212|0)[5-7]\d{8}$/.test(phone)) return setErr(t("ePhone"), "fPhone");
+  setErr("");
+  var key = days[S.dayIdx].key, staffId = S.staff;
+  if (staffId === "any") {
+    var pick = STAFF.filter(function (s) { return !takenFor(key, s.id, S.time); })[0];
+    staffId = pick ? pick.id : STAFF[0].id;
+  }
+  var b = { id: Date.now(), name: name, phone: phone, service: S.service, staff: staffId, key: key, time: S.time, status: "pending" };
+  bookings.push(b);
+  lastBooking = b;
+  showDone(b);
+  renderOwner();
+});
+function showDone(b) {
+  var d = $("done"); d.textContent = ""; d.hidden = false;
+  $("steps").parentNode.hidden = true;
+  var text = t("msg")({ service: nm(svcById(b.service)), staff: nm(staffById(b.staff)), when: whenText(b), name: b.name });
+  var copyBtn = el("button", { type: "button", class: "ghost", text: t("copy") });
+  copyBtn.addEventListener("click", function () {
+    var ok = function () { copyBtn.textContent = t("copied"); };
+    try { navigator.clipboard.writeText(text).then(ok, function () { selectMsg(); }); } catch (e) { selectMsg(); }
+  });
+  var msgEl = el("div", { class: "msg", id: "msgBox", text: text });
+  function selectMsg() { var r = document.createRange(); r.selectNodeContents(msgEl); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+  var again = el("button", { type: "button", class: "ghost", text: t("again") });
+  again.addEventListener("click", function () {
+    lastBooking = null; d.hidden = true; $("steps").parentNode.hidden = false;
+    S = { service: null, staff: null, dayIdx: 0, time: null };
+    $("fName").value = ""; $("fPhone").value = ""; renderAll();
+  });
+  d.appendChild(el("h2", { text: t("doneH") }));
+  d.appendChild(el("p", { text: t("doneP"), style: "margin:0" }));
+  d.appendChild(msgEl);
+  d.appendChild(el("div", { class: "row" }, [
+    el("a", { class: "ghost", href: "https://wa.me/?text=" + encodeURIComponent(text), target: "_blank", rel: "noopener", text: t("wa") }),
+    copyBtn, again
+  ]));
+}
+
+function setTab(owner) {
+  $("viewBook").hidden = owner; $("viewOwner").hidden = !owner;
+  $("tabBook").setAttribute("aria-pressed", !owner);
+  $("tabOwner").setAttribute("aria-pressed", owner);
+}
+$("tabBook").addEventListener("click", function () { setTab(false); });
+$("tabOwner").addEventListener("click", function () { setTab(true); renderOwner(); });
+$("langAr").addEventListener("click", function () { lang = "ar"; renderAll(); });
+$("langFr").addEventListener("click", function () { lang = "fr"; renderAll(); });
+
+renderAll();
+</script>
+
+</body>
+</html>
